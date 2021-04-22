@@ -1,0 +1,26 @@
+{
+  "name": "express-mesto",
+  "version": "1.0.0",
+  "description": "Backend for mesto.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npx eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fl0ppat/express-mesto.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fl0ppat/express-mesto/issues"
+  },
+  "homepage": "https://github.com/fl0ppat/express-mesto#readme",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  }
+}
