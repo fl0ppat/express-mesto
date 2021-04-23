@@ -21,9 +21,13 @@ module.exports.deleteCardById = (req, res) => {
         );
     })
     .catch((err) => {
-      res
-        .status(404)
-        .send({ message: `Карточка с id ${req.params.cardId} не найдена` });
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
     });
 };
 
@@ -32,11 +36,15 @@ module.exports.createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((user) => res.send({ data: user }))
-    .catch((err) =>
-      res
-        .status(400)
-        .send({ message: `Получены некорректные данные. ${err.message}` })
-    );
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
+    });
 };
 
 module.exports.setCardLike = (req, res) => {

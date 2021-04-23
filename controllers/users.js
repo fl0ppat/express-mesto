@@ -27,11 +27,15 @@ module.exports.createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch((err) =>
-      res
-        .status(400)
-        .send({ message: `Получены некорректные данные. ${err.message}` })
-    );
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
+    });
 };
 
 module.exports.updateUserData = (req, res) => {
@@ -51,9 +55,13 @@ module.exports.updateUserData = (req, res) => {
       res.send({ user });
     })
     .catch((err) => {
-      res
-        .status(400)
-        .send({ message: `Получены некорректные данные. ${err.message}` });
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
     });
 };
 
@@ -63,8 +71,12 @@ module.exports.updateUserAvatar = (req, res) => {
       res.send({ user });
     })
     .catch((err) => {
-      res
-        .status(400)
-        .send({ message: `Получены некорректные данные. ${err.message}` });
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
     });
 };
