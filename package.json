@@ -4,8 +4,10 @@
   "description": "Backend for mesto.",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npx eslint"
+    "lint": "npx eslint",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -18,9 +20,12 @@
   },
   "homepage": "https://github.com/fl0ppat/express-mesto#readme",
   "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.12.5"
   },
   "devDependencies": {
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1"
+    "eslint-plugin-import": "^2.22.1",
+    "nodemon": "^2.0.7"
   }
 }
