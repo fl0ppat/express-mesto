@@ -2,10 +2,16 @@ const Card = require("../models/card");
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send({ cards }))
-    .catch((err) =>
-      res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`)
-    );
+    .then((cards) => res.send(cards))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
+    });
 };
 
 module.exports.deleteCardById = (req, res) => {
@@ -17,7 +23,7 @@ module.exports.deleteCardById = (req, res) => {
           res.send({ cards });
         })
         .catch((err) =>
-          res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`)
+          res.status(404).send(`Карточка с id ${req.params.cardId} не найдена.`)
         );
     })
     .catch((err) => {
@@ -54,9 +60,15 @@ module.exports.setCardLike = (req, res) => {
     { new: true }
   )
     .then((card) => res.send(card))
-    .catch((err) =>
-      res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`)
-    );
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
+    });
 };
 
 module.exports.deleteCardLike = (req, res) => {
@@ -66,7 +78,13 @@ module.exports.deleteCardLike = (req, res) => {
     { new: true }
   )
     .then((card) => res.send(card))
-    .catch((err) =>
-      res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`)
-    );
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(400)
+          .send({ message: `Получены некорректные данные. ${err.message}` });
+      } else {
+        res.status(500).send(`Внутренняя ошибка сервера. ${err.message}`);
+      }
+    });
 };
