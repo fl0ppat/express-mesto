@@ -1,5 +1,21 @@
 const User = require("../models/user");
 
+function handleError(err, req, res) {
+  if (err.message === "NotFound") {
+    res
+      .status(404)
+      .send({ message: `Пользователь с id ${req.params.id} не найден.` });
+  } else if (err.name === "CastError" || "ValidationError") {
+    res.status(400).send({
+      message: `Получены некорректные данные. ${err.message}`,
+    });
+  } else {
+    res
+      .status(500)
+      .send({ message: `Внутренняя ошибка сервера. ${err.message}` });
+  }
+}
+
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ users }))

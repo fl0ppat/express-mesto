@@ -2,10 +2,10 @@ const Card = require("../models/card");
 
 function handleError(err, req, res) {
   if (err.message === "NotFound") {
-    res.status(404).send({ message: `Пост с id ${req.params.id} не найден` });
-  } else if (err.name === "CastError") {
+    res.status(404).send({ message: `Пост с id ${req.params.id} не найден.` });
+  } else if (err.name === "CastError" || "ValidationError") {
     res.status(400).send({
-      message: `Получены некорректные данные`,
+      message: `Получены некорректные данные. ${err.message}`,
     });
   } else {
     res
