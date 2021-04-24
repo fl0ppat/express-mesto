@@ -1,9 +1,9 @@
-const Card = require("../models/card");
+const Card = require('../models/card');
 
 function handleError(err, req, res) {
-  if (err.message === "NotFound") {
+  if (err.message === 'NotFound') {
     res.status(404).send({ message: `Пост с id ${req.params.id} не найден.` });
-  } else if (err.name === "CastError" || "ValidationError") {
+  } else if (err.name === 'CastError' || 'ValidationError') {
     res.status(400).send({
       message: `Получены некорректные данные. ${err.message}`,
     });
@@ -23,9 +23,9 @@ module.exports.getCards = (req, res) => {
 module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then(() => {
-      res.status(200).send({ message: "Пост удалён" });
+      res.status(200).send({ message: 'Пост удалён' });
     })
-    .orFail(new Error("NotFound"))
+    .orFail(new Error('NotFound'))
     .catch((err) => handleError(err, req, res));
 };
 
@@ -41,9 +41,9 @@ module.exports.setCardLike = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
-    .orFail(new Error("NotFound"))
+    .orFail(new Error('NotFound'))
     .then((card) => res.send(card))
     .catch((err) => handleError(err, req, res));
 };
@@ -52,9 +52,9 @@ module.exports.deleteCardLike = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
-    .orFail(new Error("NotFound"))
+    .orFail(new Error('NotFound'))
     .then((card) => res.send(card))
     .catch((err) => handleError(err, req, res));
 };
