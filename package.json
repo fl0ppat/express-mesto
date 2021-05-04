@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "npx eslint .",
     "dev": "nodemon app.js"
   },
@@ -21,12 +21,14 @@
   "homepage": "https://github.com/fl0ppat/express-mesto#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "mongoose": "^5.12.5"
+    "mongoose": "^5.12.5",
+    "validator": "^13.6.0"
   },
   "devDependencies": {
     "eslint": "^7.25.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "jest": "^26.6.3",
     "nodemon": "^2.0.7"
   }
 }
