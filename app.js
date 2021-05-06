@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { handleError } = require('./middlewares/errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -14,12 +15,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6081cb8887f85a4590ea47b1',
-  };
-  next();
-});
+app.post('/signin', require('./routers/users').login);
+app.post('/signup', require('./routers/users').createUser);
+
+app.use(require('./middlewares/auth'));
 
 app.use('/users', require('./routers/users'));
 app.use('/cards', require('./routers/cards'));
@@ -28,6 +27,6 @@ app.use('/', (req, res) => {
   res.status(404).send({ message: 'Ресурс не найден.' });
 });
 
-app.listen(PORT, () => {
-  console.log('ok');
-});
+app.use((err, req, res, next) => handleError(err, res, next));
+
+app.listen(PORT);
