@@ -1,62 +1,55 @@
+const validator = require('validator');
+const { ErrorHandler } = require('../middlewares/errors');
 const Card = require('../models/card');
 
-function handleError(err, req, res) {
-  if (err.message === 'NotFound') {
-    res
-      .status(404)
-      .send({ message: `Пост с id ${req.params.cardId} не найден.` });
-  } else if (err.name === 'CastError' || 'ValidationError') {
-    res.status(400).send({
-      message: `Получены некорректные данные. ${err.message}`,
-    });
-  } else {
-    res
-      .status(500)
-      .send({ message: `Внутренняя ошибка сервера. ${err.message}` });
-  }
-}
-
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch((err) => handleError(err, req, res));
+    .catch((err) => next(err));
 };
 
-module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('NotFound'))
-    .then(() => {
-      res.status(200).send({ message: 'Пост удалён' });
-    })
-    .catch((err) => handleError(err, req, res));
+module.exports.deleteCardById = (req, res, next) => {
+  Card.deleteOne({ _id: req.params.cardId, owner: req.user })
+    .orFail(new ErrorHandler(404, 'Card'))
+    .then(() => res.status(200).send({ message: 'Удалено' }))
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        return next(new ErrorHandler(400, 'Wrong id scheme.'));
+      }
+      return next(err);
+    });
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
-  Card.create({ name, link, owner: req.user._id })
+  if (!validator.isURL(link) && !link.match(/(https?:\/\/.*\.(?:png|jpg|webp|jpeg|gif))/i)) {
+    throw new ErrorHandler(400, 'Invalid card image URL');
+  }
+
+  Card.create({ name, link, owner: req.user })
     .then((user) => res.send({ data: user }))
-    .catch((err) => handleError(err, req, res));
+    .catch((err) => next(err));
 };
 
-module.exports.setCardLike = (req, res) => {
+module.exports.setCardLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user } },
     { new: true },
   )
-    .orFail(new Error('NotFound'))
+    .orFail(new ErrorHandler(404, 'Card'))
     .then((card) => res.send(card))
-    .catch((err) => handleError(err, req, res));
+    .catch((err) => next(err));
 };
 
-module.exports.deleteCardLike = (req, res) => {
+module.exports.deleteCardLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.user } },
     { new: true },
   )
-    .orFail(new Error('NotFound'))
+    .orFail(new ErrorHandler(404, 'Card'))
     .then((card) => res.send(card))
-    .catch((err) => handleError(err, req, res));
+    .catch((err) => next(err));
 };
