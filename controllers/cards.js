@@ -1,4 +1,5 @@
 const validator = require('validator');
+const NotFoundError = require('../errors/NotFound');
 const { ErrorHandler } = require('../middlewares/errors');
 const Card = require('../models/card');
 
@@ -10,7 +11,7 @@ module.exports.getCards = (req, res, next) => {
 
 module.exports.deleteCardById = (req, res, next) => {
   Card.deleteOne({ _id: req.params.cardId, owner: req.user })
-    .orFail(new ErrorHandler(404, 'Card'))
+    .orFail(new NotFoundError('Пост не найден'))
     .then(() => res.status(200).send({ message: 'Удалено' }))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {

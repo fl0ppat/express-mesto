@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { handleError } = require('./middlewares/errors');
+const NotFoundError = require('./errors/NotFound');
+const handleError = require('./middlewares/errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -23,10 +24,8 @@ app.use(require('./middlewares/auth'));
 app.use('/users', require('./routers/users'));
 app.use('/cards', require('./routers/cards'));
 
-app.use('/', (req, res) => {
-  res.status(404).send({ message: 'Ресурс не найден.' });
-});
+app.use('/', (err, req, res, next) => next(new NotFoundError('Ресурс не найден')));
 
-app.use((err, req, res, next) => handleError(err, res, next));
+app.use((err, req, res, next) => handleError(err, req, res, next));
 
 app.listen(PORT);

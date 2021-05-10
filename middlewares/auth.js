@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const UnauthorizedError = require('../errors/Unauthorized');
 
 /**
  * Cookie parser from
@@ -10,7 +11,7 @@ module.exports = (req, res, next) => {
   try {
     token = Object.fromEntries(req.headers.cookie.split('; ').map((x) => x.split(/=(.*)$/, 2).map(decodeURIComponent)))._id;
   } catch (err) {
-    return res.status(401).send({ message: 'Необходима авторизация' });
+    return next(new UnauthorizedError('Необходима авторизация'));
   }
 
   let payload;
@@ -18,7 +19,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, '12345');
   } catch (err) {
-    return res.status(401).send({ message: 'Необходима авторизация' });
+    return next(new UnauthorizedError('Необходима авторизация'));
   }
   req.user = payload;
 

@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
-const { ErrorHandler } = require('../middlewares/errors');
+
+const BadRequestError = require('../errors/BadRequest');
+const NotFoundError = require('../errors/NotFound');
+const ConflictError = require('../errors/Conflict');
+const UnauthorizedError = require('../errors/Unauthorized');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -13,18 +17,22 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   if (!validator.isMongoId(req.params.id)) {
-    throw new ErrorHandler(400, 'Invalid id.');
+    throw new BadRequestError('Ошибка в полученном id');
   }
 
   User.findById(req.params.id)
-    .orFail(new ErrorHandler(404, 'User'))
+    .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.status(200).send(user))
     .catch((err) => next(err));
 };
 
 module.exports.getAuthUser = (req, res, next) => {
+  if (!validator.isMongoId(req.user)) {
+    throw new BadRequestError('Ошибка в полученном id');
+  }
+
   User.findById(req.user)
-    .orFail(new ErrorHandler(404, 'User'))
+    .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => next(err));
 };
@@ -38,10 +46,7 @@ module.exports.createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  if (!validator.isURL(avatar) && !avatar.match(/(https?:\/\/.*\.(?:png|jpg|webp|jpeg|gif))/i)) {
-    throw new ErrorHandler(400, 'Invalid avatar URL');
-  }
-  if (!validator.isEmail(email)) throw new ErrorHandler(400, 'Invalid Email.');
+  if (!validator.isEmail(email)) throw new BadRequestError('Ошибка в полученных данных. Невалидный email');
 
   return bcrypt.hash(password, 10).then((hash) => {
     User.create({
@@ -52,7 +57,7 @@ module.exports.createUser = (req, res, next) => {
       }))
       .catch((err) => {
         if (err.name === 'MongoError' && err.code === 11000) {
-          return next(new ErrorHandler(409));
+          return next(new ConflictError('Email уже зарегестрирован'));
         }
 
         return next(err);
@@ -72,15 +77,23 @@ module.exports.updateUserData = (req, res, next) => {
     newData.about = req.body.about;
   }
 
+  if (!validator.isMongoId(req.user)) {
+    throw new BadRequestError('Ошибка в id пользователя');
+  }
+
   User.findByIdAndUpdate(req.user, newData)
-    .orFail(new ErrorHandler(404, 'User'))
+    .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => next(err));
 };
 
 module.exports.updateUserAvatar = (req, res, next) => {
+  if (!validator.isMongoId(req.user)) {
+    throw new BadRequestError('Ошибка в id пользователя');
+  }
+
   User.findByIdAndUpdate(req.user, { avatar: req.body.avatar })
-    .orFail(new ErrorHandler(404, 'User'))
+    .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => next(err));
 };
@@ -91,14 +104,14 @@ module.exports.login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new ErrorHandler(401));
+        return Promise.reject(new UnauthorizedError('Указан неверный логин или пароль'));
       }
       _id = user._id;
       return bcrypt.compare(password, user.password);
     })
     .then((matched) => {
       if (!matched) {
-        return Promise.reject(new ErrorHandler(401));
+        return Promise.reject(new UnauthorizedError('Указан неверный логин или пароль'));
       }
       return res.status(200).cookie(
         '_id',
