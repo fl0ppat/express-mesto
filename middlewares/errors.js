@@ -1,9 +1,9 @@
 const handleError = (err, req, res) => {
-  const { code = 500, message } = err;
+  const { statusCode = 500, message } = err;
   res
-    .status(code)
+    .status(statusCode)
     .send({
-      message: code === 500
+      message: statusCode === 500
         ? 'На сервере произошла ошибка'
         : message,
     });
