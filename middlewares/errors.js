@@ -1,4 +1,4 @@
-const handleError = (err, req, res, next) => {
+const handleError = (err, req, res) => {
   const { code = 500, message } = err;
   res
     .status(code)

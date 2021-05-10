@@ -24,7 +24,10 @@ module.exports.deleteCardById = (req, res, next) => {
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
-  if (!validator.isURL(link) && !link.match(/(https?:\/\/.*\.(?:png|jpg|webp|jpeg|gif))/i)) {
+  if (
+    !validator.isURL(link)
+    && !link.match(/(https?:\/\/.*\.(?:png|jpg|webp|jpeg|gif))/i)
+  ) {
     throw new ErrorHandler(400, 'Invalid card image URL');
   }
 
