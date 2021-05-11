@@ -1,6 +1,5 @@
-const validator = require('validator');
 const NotFoundError = require('../errors/NotFound');
-const { ErrorHandler } = require('../middlewares/errors');
+const ForbiddenError = require('../errors/Forbidden');
 const Card = require('../models/card');
 
 module.exports.getCards = (req, res, next) => {
@@ -10,26 +9,22 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.deleteOne({ _id: req.params.cardId, owner: req.user })
+  Card.findById({ _id: req.params.cardId, owner: req.user })
     .orFail(new NotFoundError('Пост не найден'))
-    .then(() => res.status(200).send({ message: 'Удалено' }))
-    .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return next(new ErrorHandler(400, 'Wrong id scheme.'));
+    .then((card) => {
+      if (req.user !== card.owner) {
+        throw new ForbiddenError('Вы не можете удалять чужие карточки');
       }
-      return next(err);
-    });
+
+      Card.deleteOne(card)
+        .then(res.status(200).send({ message: 'Удалено' }))
+        .catch((err) => next(err));
+    })
+    .catch((err) => next(err));
 };
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-
-  if (
-    !validator.isURL(link)
-    && !link.match(/(https?:\/\/.*\.(?:png|jpg|webp|jpeg|gif))/i)
-  ) {
-    throw new ErrorHandler(400, 'Invalid card image URL');
-  }
 
   Card.create({ name, link, owner: req.user })
     .then((user) => res.send({ data: user }))
@@ -42,7 +37,7 @@ module.exports.setCardLike = (req, res, next) => {
     { $addToSet: { likes: req.user } },
     { new: true },
   )
-    .orFail(new ErrorHandler(404, 'Card'))
+    .orFail(new NotFoundError('Пост не найден'))
     .then((card) => res.send(card))
     .catch((err) => next(err));
 };
@@ -53,7 +48,7 @@ module.exports.deleteCardLike = (req, res, next) => {
     { $pull: { likes: req.user } },
     { new: true },
   )
-    .orFail(new ErrorHandler(404, 'Card'))
+    .orFail(new NotFoundError('Пост не найден'))
     .then((card) => res.send(card))
     .catch((err) => next(err));
 };

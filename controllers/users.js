@@ -1,10 +1,7 @@
-const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
-
-const BadRequestError = require('../errors/BadRequest');
 const NotFoundError = require('../errors/NotFound');
 const ConflictError = require('../errors/Conflict');
 const UnauthorizedError = require('../errors/Unauthorized');
@@ -16,10 +13,6 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUserById = (req, res, next) => {
-  if (!validator.isMongoId(req.params.id)) {
-    throw new BadRequestError('Ошибка в полученном id');
-  }
-
   User.findById(req.params.id)
     .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.status(200).send(user))
@@ -27,10 +20,6 @@ module.exports.getUserById = (req, res, next) => {
 };
 
 module.exports.getAuthUser = (req, res, next) => {
-  if (!validator.isMongoId(req.user)) {
-    throw new BadRequestError('Ошибка в полученном id');
-  }
-
   User.findById(req.user)
     .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
@@ -45,8 +34,6 @@ module.exports.createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-
-  if (!validator.isEmail(email)) throw new BadRequestError('Ошибка в полученных данных. Невалидный email');
 
   return bcrypt.hash(password, 10).then((hash) => {
     User.create({
@@ -77,22 +64,14 @@ module.exports.updateUserData = (req, res, next) => {
     newData.about = req.body.about;
   }
 
-  if (!validator.isMongoId(req.user)) {
-    throw new BadRequestError('Ошибка в id пользователя');
-  }
-
-  User.findByIdAndUpdate(req.user, newData)
+  User.findByIdAndUpdate(req.user, newData, { runValidators: true, new: true })
     .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => next(err));
 };
 
 module.exports.updateUserAvatar = (req, res, next) => {
-  if (!validator.isMongoId(req.user)) {
-    throw new BadRequestError('Ошибка в id пользователя');
-  }
-
-  User.findByIdAndUpdate(req.user, { avatar: req.body.avatar })
+  User.findByIdAndUpdate(req.user, { avatar: req.body.avatar }, { runValidators: true, new: true })
     .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.send(user))
     .catch((err) => next(err));
@@ -117,7 +96,7 @@ module.exports.login = (req, res, next) => {
         '_id',
         jwt.sign(_id.toJSON(), '12345'),
         { maxAge: 604800000, /* 7days */ httpOnly: true },
-      ).status(200).send({ mesage: 'You logged in successfully!' });
+      ).status(200).send({ mesage: 'Вход выполнен' });
     })
     .catch((err) => next(err));
 };
