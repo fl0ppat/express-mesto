@@ -7,7 +7,7 @@
     "start": "node app.js",
     "test": "jest",
     "lint": "npx eslint .",
-    "dev": "nodemon app.js"
+    "dev": "set NODE_ENV=dev && nodemon app.js"
   },
   "repository": {
     "type": "git",
