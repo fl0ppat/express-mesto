@@ -7,21 +7,16 @@ const UnauthorizedError = require('../errors/Unauthorized');
  */
 
 module.exports = (req, res, next) => {
-  let token;
   try {
-    token = Object.fromEntries(req.headers.cookie.split('; ').map((x) => x.split(/=(.*)$/, 2).map(decodeURIComponent)))._id;
-  } catch (err) {
-    return next(new UnauthorizedError('Необходима авторизация'));
+    const payload = jwt.verify(
+      Object.fromEntries(req.headers.cookie.split('; ')
+        .map((x) => x.split(/=(.*)$/, 2).map(decodeURIComponent)))._id,
+      '12345',
+    );
+    req.user = payload;
+  } catch {
+    throw new UnauthorizedError('Необходима авторизация');
   }
 
-  let payload;
-
-  try {
-    payload = jwt.verify(token, '12345');
-  } catch (err) {
-    return next(new UnauthorizedError('Необходима авторизация'));
-  }
-  req.user = payload;
-
-  return next();
+  next();
 };
