@@ -1,6 +1,11 @@
 class UnauthorizedError extends Error {
   constructor(message) {
-    super(message);
+    if (!message) {
+      super('Указан неверный логин или пароль');
+    } else {
+      super(message);
+    }
+
     this.statusCode = 401;
   }
 }
