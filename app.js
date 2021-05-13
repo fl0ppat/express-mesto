@@ -28,11 +28,11 @@ app.use('/cards', require('./routers/cards'));
 app.use('/', (req, res, next) => next(new NotFoundError('Ресурс не найден')));
 
 app.use((err, req, res, next) => {
-  if (process.env.NODE_ENV.trim() === 'dev') {
-    console.log(err);
+  if (isCelebrateError(err)) {
+    if (err.details.has('body')) return next(new BadRequestError(err.details.get('body').message));
+    if (err.details.has('params')) return next(new BadRequestError(err.details.get('params').message));
   }
-
-  if (isCelebrateError(err) || err.name === 'CastError') return next(new BadRequestError('Ошибка в полученных данных'));
+  if (err.name === 'CastError') return next(new BadRequestError('Ошибка в полученных данных'));
   return next(err);
 });
 
