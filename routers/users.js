@@ -15,14 +15,23 @@ router.get('/me', getAuthUser);
 
 router.get('/:id', celebrate({
   query: Joi.object().keys({
-    id: Joi.string().hex().length(24).message('Ошибка в полученном id'),
+    id: Joi.string().hex().length(24).messages({
+      'string.hex': 'Ошибка в полученном id',
+      'string.length': 'Ошибка в полученном id',
+    }),
   }),
 }), getUserById);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).message('Имя должно содержать не менее 2 и не более 30 символов'),
-    about: Joi.string().min(2).max(30).message('Информация должна содержать не менее 2 и не более 30 символов'),
+    name: Joi.string().min(2).max(30).messages({
+      'string.min': 'Имя может содержать не менее {#limit} символов',
+      'string.max': 'Имя может содержать не более {#limit} символов',
+    }),
+    about: Joi.string().min(2).max(30).messages({
+      'string.min': 'Информация может содержать не менее {#limit} символов',
+      'string.max': 'Информация может содержать не более {#limit} символов',
+    }),
   }),
 }), updateUserData);
 

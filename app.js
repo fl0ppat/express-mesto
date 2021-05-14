@@ -32,7 +32,6 @@ app.use((err, req, res, next) => {
     if (err.details.has('body')) return next(new BadRequestError(err.details.get('body').message));
     if (err.details.has('params')) return next(new BadRequestError(err.details.get('params').message));
   }
-  if (err.name === 'CastError') return next(new BadRequestError('Ошибка в полученных данных'));
   return next(err);
 });
 

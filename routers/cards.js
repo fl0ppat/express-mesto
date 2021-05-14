@@ -14,7 +14,10 @@ router.get('/', getCards);
 
 router.delete('/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24).message('Ошибка в полученном id'),
+    cardId: Joi.string().hex().length(24).messages({
+      'string.hex': 'Ошибка в полученном id',
+      'string.length': 'Ошибка в полученном id',
+    }),
   }),
 }), deleteCardById);
 
@@ -40,13 +43,19 @@ router.post('/', celebrate({
 
 router.put('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24).message('Ошибка в полученном id'),
+    cardId: Joi.string().hex().length(24).messages({
+      'string.hex': 'Ошибка в полученном id',
+      'string.length': 'Ошибка в полученном id',
+    }),
   }),
 }), setCardLike);
 
 router.delete('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24).message('Ошибка в полученном id'),
+    cardId: Joi.string().hex().length(24).messages({
+      'string.hex': 'Ошибка в полученном id',
+      'string.length': 'Ошибка в полученном id',
+    }),
   }),
 }), deleteCardLike);
 
