@@ -12,7 +12,7 @@ module.exports.deleteCardById = (req, res, next) => {
   Card.findById({ _id: req.params.cardId, owner: req.user })
     .orFail(new NotFoundError('Пост не найден'))
     .then((card) => {
-      if (req.user !== card.owner) {
+      if (req.user !== card.owner.toString()) {
         throw new ForbiddenError('Вы не можете удалять чужие карточки');
       }
 
